@@ -5,8 +5,10 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
-    exclude: ["**/e2e/**"],  
+    include: ['src/**/*.{test,spec}.{js,jsx}'],
+    exclude: ['**/node_modules/**', '**/e2e/**'],
     setupFiles: './src/test/setup.js',
+    globals: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
