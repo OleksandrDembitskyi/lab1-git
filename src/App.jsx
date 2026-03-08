@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { add, subtract, multiply, divide } from './utils/calculator';
@@ -9,6 +9,10 @@ function App() {
   const [num2, setNum2] = useState(0);
   const [operation, setOperation] = useState('add');
   const [result, setResult] = useState(null);
+
+  // Вставляю змінні оточення
+  const appTitle = import.meta.env.VITE_APP_TITLE;
+  const appEnv = import.meta.env.VITE_APP_ENV;
 
   const calculate = () => {
     try {
@@ -39,8 +43,26 @@ function App() {
     <div className="App">
       <Header />
       <main className="main-content">
-        <h1>Лабораторна робота №2</h1>
+        {/* Вставляю відображення змінних */}
+        <div style={{ 
+          position: 'fixed', 
+          top: 10, 
+          right: 10, 
+          padding: '5px 10px', 
+          background: appEnv === 'development' ? '#ff6b6b' : '#4caf50', 
+          color: 'white', 
+          borderRadius: '4px',
+          fontSize: '12px',
+          zIndex: 1000
+        }}>
+          {appEnv} mode
+        </div>
+
+        <h1>Лабораторна робота №3</h1>
         <p>Тестування: простий калькулятор</p>
+        
+        {/* Додаю заголовок */}
+        <h2>{appTitle}</h2>
         
         <div className="calculator">
           <input 
