@@ -1,5 +1,9 @@
 # Lab1-Git — Лабораторні роботи з управління ІТ-проєктами
 
+[![CI/CD Pipeline](https://github.com/OleksandrDembitskyi/lab1-git/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/OleksandrDembitskyi/lab1-git/actions/workflows/ci-cd.yml)
+
+🌐 **Живий сайт:** [lab1-git-tau.vercel.app](https://lab1-git-tau.vercel.app)
+
 ## Проєкт
 Базовий React-застосунок, створений для виконання серії лабораторних робіт. Слугує основою для вивчення Git, тестування, збірки, CI/CD та моніторингу.
 
@@ -70,8 +74,27 @@ npm run build                 # створення продуктової збі
 npm run preview               # локальний перегляд збірки
 npm run lint                  # перевірка коду лінтером
 ```
+---
 
-## 🚀 Лабораторна робота №4 — CI/CD (буде додано)
+## 🚀 Лабораторна робота №4 — CI/CD
+**Тема:** Безперервна інтеграція та автоматизація розгортання (CI/CD)
+
+### Виконано:
+- Налаштовано CI/CD пайплайн у GitHub Actions (`.github/workflows/ci-cd.yml`)
+- Автоматична перевірка коду при push та Pull Request: лінтер, тести, збірка
+- Перевірка реакції CI на помилки: навмисне зламано тест (червоний ❌) та виправлено (зелений ✅)
+- Налаштовано автоматичний деплой на Vercel при push у гілку `main`
+- Додано Branch Protection Rule для захисту гілки `main`
+- Додано секрети `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+- Створено та змерджено Pull Request #5 з `develop` в `main`
+- Додано статус-бейдж CI/CD у шапку README
+
+### Команди для перевірки:
+```bash
+npm run lint
+npm run test:unit
+npm run build
+```
 
 ---
 
@@ -99,4 +122,4 @@ npm run dev
 ## Автор
 **Дембіцький Олександр**  
 Група: ПП-32-1  
-Пошта: oleksandr.dembitskyi.pp.2023@lpnu.ua
+Пошта: oleksandr.dembitskyi.pp.2023@lpnu.ua 
