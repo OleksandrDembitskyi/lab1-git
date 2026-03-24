@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { add, subtract, multiply, divide } from './utils/calculator';
 import './App.css';
 import posthog from 'posthog-js';
 import { useFeatureFlagEnabled } from '@posthog/react';
+import * as Sentry from '@sentry/react';
 
 function App() {
   const [num1, setNum1] = useState(0);
@@ -18,6 +19,15 @@ function App() {
   
   // Feature flag для кнопки очищення
   const showClearButton = useFeatureFlagEnabled('show-clear-button');
+
+  // Встановлення контексту користувача для Sentry
+  useEffect(() => {
+    Sentry.setUser({
+      id: "12345",
+      email: "oleksandr.dembitskyi.pp.2023@lpnu.ua",
+      segment: "student_user"
+    });
+  }, []);
 
   const calculate = () => {
     try {
@@ -79,6 +89,13 @@ function App() {
     posthog.capture('clear_button_clicked');
   };
 
+  // Функція для генерації тестової помилки (Sentry) — кожен клік створює нову унікальну помилку
+  const breakTheWorld = () => {
+    const timestamp = new Date().toLocaleTimeString();
+    const errorId = Math.random().toString(36).substring(2, 10);
+    throw new Error(`[${timestamp}] Test error from Sentry! ID: ${errorId}`);
+  };
+
   return (
     <div className="App">
       <Header />
@@ -130,6 +147,23 @@ function App() {
               Очистити
             </button>
           )}
+          
+          {/* Кнопка для тесту Sentry — кожен клік створює нову унікальну помилку */}
+          <button 
+            onClick={breakTheWorld}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              backgroundColor: '#ff6b6b',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginLeft: '10px'
+            }}
+          >
+            Break the world
+          </button>
           
           {result !== null && (
             <div className="result">
