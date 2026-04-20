@@ -39,7 +39,14 @@ function App() {
     }
 
     return () => clearTimeout(timeout);
-  }, []);
+  }, []); // Порожній масив — НЕ залежить від showClearButton
+
+  // Додатковий ефект: якщо showClearButton вже відомий через кеш — одразу показуємо
+  useEffect(() => {
+    if (showClearButton !== undefined) {
+      setFlagsReady(true);
+    }
+  }, [showClearButton]);
 
   // Sentry user
   useEffect(() => {
