@@ -20,31 +20,33 @@ function App() {
   // Feature flag
   const showClearButton = useFeatureFlagEnabled('show-clear-button');
 
-  // Чекаємо, поки PostHog завантажить прапорці (або вони вже є)
+  // Чекаємо, поки PostHog завантажить прапорці
   useEffect(() => {
-    // ЯКЩО ПРАПОРЕЦЬ ВЖЕ ВІДОМИЙ (з кешу) — одразу показуємо
+    let isMounted = true;
+
+    // Якщо значення вже відоме (з кешу)
     if (showClearButton !== undefined) {
-      setFlagsReady(true);
+      if (isMounted) setFlagsReady(true);
       return;
     }
 
     // Таймаут на випадок, якщо прапорці довго завантажуються
     const timeout = setTimeout(() => {
-      setFlagsReady(true);
+      if (isMounted) setFlagsReady(true);
     }, 3000);
 
     // Слухаємо подію завантаження прапорців
-    const cleanup = posthog?.onFeatureFlags?.(() => {
-      setFlagsReady(true);
-      clearTimeout(timeout);
-    });
-
-    // Якщо posthog або onFeatureFlags не існує — просто встановлюємо через таймаут
-    if (!cleanup) {
-      // Тут вже є таймаут, нічого додатково не робимо
+    if (posthog?.onFeatureFlags) {
+      posthog.onFeatureFlags(() => {
+        if (isMounted) setFlagsReady(true);
+        clearTimeout(timeout);
+      });
     }
 
-    return () => clearTimeout(timeout);
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
   }, [showClearButton]);
 
   // Sentry user
