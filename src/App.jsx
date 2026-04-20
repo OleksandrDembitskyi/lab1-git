@@ -20,33 +20,31 @@ function App() {
   // Feature flag
   const showClearButton = useFeatureFlagEnabled('show-clear-button');
 
-  // Чекаємо, поки PostHog завантажить прапорці
+  // Чекаємо, поки PostHog завантажить прапорці (або вони вже є)
   useEffect(() => {
-    let isMounted = true;
-
-    // Якщо значення вже відоме (з кешу)
+    // ЯКЩО ПРАПОРЕЦЬ ВЖЕ ВІДОМИЙ (з кешу) — одразу показуємо
     if (showClearButton !== undefined) {
-      if (isMounted) setFlagsReady(true);
+      setFlagsReady(true);
       return;
     }
 
     // Таймаут на випадок, якщо прапорці довго завантажуються
     const timeout = setTimeout(() => {
-      if (isMounted) setFlagsReady(true);
+      setFlagsReady(true);
     }, 3000);
 
     // Слухаємо подію завантаження прапорців
     if (posthog?.onFeatureFlags) {
       posthog.onFeatureFlags(() => {
-        if (isMounted) setFlagsReady(true);
+        setFlagsReady(true);
         clearTimeout(timeout);
       });
+    } else {
+      setFlagsReady(true);
+      clearTimeout(timeout);
     }
 
-    return () => {
-      isMounted = false;
-      clearTimeout(timeout);
-    };
+    return () => clearTimeout(timeout);
   }, [showClearButton]);
 
   // Sentry user
