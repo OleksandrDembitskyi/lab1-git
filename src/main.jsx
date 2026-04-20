@@ -6,11 +6,11 @@ import posthog from 'posthog-js'
 import { PostHogProvider } from '@posthog/react'
 import * as Sentry from '@sentry/react'
 
-// Ініціалізація PostHog
+// Ініціалізація PostHog з reverse proxy
 posthog.init(
   import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
   {
-    api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+    api_host: '/ph',  // ← ЗМІНЕНО: тепер через reverse proxy (ваш домен)
     person_profiles: 'identified_only',
   }
 )
