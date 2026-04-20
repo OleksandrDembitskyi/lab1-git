@@ -20,15 +20,15 @@ function App() {
   // Feature flag
   const showClearButton = useFeatureFlagEnabled('show-clear-button');
 
-  // Чекаємо, поки PostHog завантажить прапорці (або вони вже є)
+  // Чекаємо, поки PostHog завантажить прапорці
   useEffect(() => {
-    // ЯКЩО ПРАПОРЕЦЬ ВЖЕ ВІДОМИЙ (з кешу) — одразу показуємо
+    // Якщо значення вже відоме — одразу показуємо (але через setTimeout, щоб уникнути конфліктів)
     if (showClearButton !== undefined) {
-      setFlagsReady(true);
-      return;
+      const timer = setTimeout(() => setFlagsReady(true), 50);
+      return () => clearTimeout(timer);
     }
 
-    // Таймаут на випадок, якщо прапорці довго завантажуються
+    // Таймаут на випадок, якщо прапорці довго завантажуються (для VPN)
     const timeout = setTimeout(() => {
       setFlagsReady(true);
     }, 3000);
@@ -39,13 +39,18 @@ function App() {
         setFlagsReady(true);
         clearTimeout(timeout);
       });
-    } else {
-      setFlagsReady(true);
-      clearTimeout(timeout);
     }
 
     return () => clearTimeout(timeout);
   }, [showClearButton]);
+
+  // Додатковий ефект для підстраховки (якщо чомусь не спрацювало)
+  useEffect(() => {
+    const finalTimeout = setTimeout(() => {
+      setFlagsReady(true);
+    }, 4000);
+    return () => clearTimeout(finalTimeout);
+  }, []);
 
   // Sentry user
   useEffect(() => {
