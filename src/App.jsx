@@ -4,7 +4,6 @@ import Footer from './components/Footer';
 import { add, subtract, multiply, divide } from './utils/calculator';
 import './App.css';
 import posthog from 'posthog-js';
-import { useFeatureFlagEnabled } from '@posthog/react';
 import * as Sentry from '@sentry/react';
 
 function App() {
@@ -13,14 +12,13 @@ function App() {
   const [operation, setOperation] = useState('add');
   const [result, setResult] = useState(null);
 
-  // Вставляю змінні оточення
+  // Feature flag (FIXED)
+  const [showClearButton, setShowClearButton] = useState(false);
+
   const appTitle = import.meta.env.VITE_APP_TITLE;
   const appEnv = import.meta.env.VITE_APP_ENV;
-  
-  // Feature flag для кнопки очищення
-  const showClearButton = useFeatureFlagEnabled('show-clear-button');
 
-  // Встановлення контексту користувача для Sentry
+  // Sentry user
   useEffect(() => {
     Sentry.setUser({
       id: "12345",
@@ -29,9 +27,18 @@ function App() {
     });
   }, []);
 
+  // FIX: правильне завантаження feature flags
+  useEffect(() => {
+    posthog.onFeatureFlags(() => {
+      const enabled = posthog.isFeatureEnabled('show-clear-button');
+      setShowClearButton(!!enabled);
+    });
+  }, []);
+
   const calculate = () => {
     try {
       let res;
+
       switch (operation) {
         case 'add':
           res = add(num1, num2);
@@ -48,25 +55,24 @@ function App() {
         default:
           res = 0;
       }
+
       setResult(res);
-      
-      // Подія успішного обчислення
+
       posthog.capture('calculation_performed', {
-        operation: operation,
-        num1: num1,
-        num2: num2,
+        operation,
+        num1,
+        num2,
         result: res
       });
-      
+
     } catch (error) {
       setResult(error.message);
-      
-      // Подія помилки (ділення на нуль)
+
       posthog.capture('error_occurred', {
-        error_type: 'division_by_zero',
-        operation: operation,
-        num1: num1,
-        num2: num2
+        error_type: 'calculation_error',
+        operation,
+        num1,
+        num2
       });
     }
   };
@@ -74,8 +80,7 @@ function App() {
   const handleOperationChange = (e) => {
     const selectedOp = e.target.value;
     setOperation(selectedOp);
-    
-    // Подія вибору операції
+
     posthog.capture('operation_selected', {
       operation: selectedOp
     });
@@ -86,10 +91,10 @@ function App() {
     setNum2(0);
     setOperation('add');
     setResult(null);
+
     posthog.capture('clear_button_clicked');
   };
 
-  // Функція для генерації тестової помилки (Sentry) — кожен клік створює нову унікальну помилку
   const breakTheWorld = () => {
     const timestamp = new Date().toLocaleTimeString();
     const errorId = Math.random().toString(36).substring(2, 10);
@@ -99,15 +104,16 @@ function App() {
   return (
     <div className="App">
       <Header />
+
       <main className="main-content">
-        {/* Вставляю відображення змінних */}
-        <div style={{ 
-          position: 'fixed', 
-          top: 10, 
-          right: 10, 
-          padding: '5px 10px', 
-          background: appEnv === 'development' ? '#ff6b6b' : '#4caf50', 
-          color: 'white', 
+
+        <div style={{
+          position: 'fixed',
+          top: 10,
+          right: 10,
+          padding: '5px 10px',
+          background: appEnv === 'development' ? '#ff6b6b' : '#4caf50',
+          color: 'white',
           borderRadius: '4px',
           fontSize: '12px',
           zIndex: 1000
@@ -116,40 +122,41 @@ function App() {
         </div>
 
         <h1>Простий калькулятор</h1>
-        
-        {/* Додаю заголовок */}
         <h2>{appTitle}</h2>
-        
+
         <div className="calculator">
-          <input 
-            type="number" 
-            value={num1} 
+
+          <input
+            type="number"
+            value={num1}
             onChange={(e) => setNum1(Number(e.target.value))}
             placeholder="Число 1"
           />
+
           <select value={operation} onChange={handleOperationChange}>
             <option value="add">+</option>
             <option value="subtract">-</option>
             <option value="multiply">*</option>
             <option value="divide">/</option>
           </select>
-          <input 
-            type="number" 
-            value={num2} 
+
+          <input
+            type="number"
+            value={num2}
             onChange={(e) => setNum2(Number(e.target.value))}
             placeholder="Число 2"
           />
+
           <button onClick={calculate}>=</button>
-          
-          {/* Feature flag: кнопка "Очистити" показується тільки якщо прапорець увімкнений */}
+
+          {/* FIXED FEATURE FLAG */}
           {showClearButton && (
             <button onClick={handleClear} className="clear-btn">
               Очистити
             </button>
           )}
-          
-          {/* Кнопка для тесту Sentry — кожен клік створює нову унікальну помилку */}
-          <button 
+
+          <button
             onClick={breakTheWorld}
             style={{
               marginTop: '20px',
@@ -164,7 +171,7 @@ function App() {
           >
             Break the world
           </button>
-          
+
           {result !== null && (
             <div className="result">
               Результат: <strong>{result}</strong>
@@ -172,6 +179,7 @@ function App() {
           )}
         </div>
       </main>
+
       <Footer />
     </div>
   );
