@@ -11,7 +11,7 @@ posthog.init(
   import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
   {
     api_host: '/ph',  // ← ЗМІНЕНО: тепер через reverse proxy (ваш домен)
-    person_profiles: 'identified_only',
+    person_profiles: 'always',
   }
 )
 

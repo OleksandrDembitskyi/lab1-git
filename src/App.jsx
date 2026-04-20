@@ -4,7 +4,7 @@ import Footer from './components/Footer';
 import { add, subtract, multiply, divide } from './utils/calculator';
 import './App.css';
 import posthog from 'posthog-js';
-import { useFeatureFlagEnabled } from '@posthog/react';  // ← ПОВЕРНУТИ ЦЕЙ ІМПОРТ
+import { useFeatureFlagEnabled } from '@posthog/react';
 import * as Sentry from '@sentry/react';
 
 function App() {
@@ -12,12 +12,34 @@ function App() {
   const [num2, setNum2] = useState(0);
   const [operation, setOperation] = useState('add');
   const [result, setResult] = useState(null);
+  const [flagsReady, setFlagsReady] = useState(false);
 
   const appTitle = import.meta.env.VITE_APP_TITLE;
   const appEnv = import.meta.env.VITE_APP_ENV;
   
-  // Feature flag - правильний спосіб
+  // Feature flag
   const showClearButton = useFeatureFlagEnabled('show-clear-button');
+
+  // Чекаємо, поки PostHog завантажить прапорці
+  useEffect(() => {
+    // Таймаут на випадок, якщо прапорці довго завантажуються
+    const timeout = setTimeout(() => {
+      setFlagsReady(true);
+    }, 3000);
+
+    // Слухаємо подію завантаження прапорців
+    if (posthog?.onFeatureFlags) {
+      posthog.onFeatureFlags(() => {
+        setFlagsReady(true);
+        clearTimeout(timeout);
+      });
+    } else {
+      setFlagsReady(true);
+      clearTimeout(timeout);
+    }
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   // Sentry user
   useEffect(() => {
@@ -91,6 +113,9 @@ function App() {
     throw new Error(`[${timestamp}] Test error from Sentry! ID: ${errorId}`);
   };
 
+  // Кнопка показується тільки коли прапорці завантажились І прапорець true
+  const shouldShowButton = flagsReady && showClearButton === true;
+
   return (
     <div className="App">
       <Header />
@@ -133,7 +158,7 @@ function App() {
           />
           <button onClick={calculate}>=</button>
           
-          {showClearButton && (
+          {shouldShowButton && (
             <button onClick={handleClear} className="clear-btn">
               Очистити
             </button>
