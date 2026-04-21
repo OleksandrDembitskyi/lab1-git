@@ -10,8 +10,12 @@ import * as Sentry from '@sentry/react'
 posthog.init(
   import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
   {
-    api_host: '/ph',  // ← ЗМІНЕНО: тепер через reverse proxy (ваш домен)
+    api_host: '/ph',
     person_profiles: 'always',
+    disable_session_recording: false,  // ← ДОДАТИ
+    loaded: (posthog) => {              // ← ДОДАТИ
+      posthog.reloadFeatureFlags();     // ← ДОДАТИ
+    }
   }
 )
 

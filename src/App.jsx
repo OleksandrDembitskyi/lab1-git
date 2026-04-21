@@ -12,41 +12,15 @@ function App() {
   const [num2, setNum2] = useState(0);
   const [operation, setOperation] = useState('add');
   const [result, setResult] = useState(null);
-  const [flagsReady, setFlagsReady] = useState(false);
 
   const appTitle = import.meta.env.VITE_APP_TITLE;
   const appEnv = import.meta.env.VITE_APP_ENV;
   
-  // Feature flag
+  // Feature flag - спрощено
   const showClearButton = useFeatureFlagEnabled('show-clear-button');
-
-  // Чекаємо, поки PostHog завантажить прапорці
-  useEffect(() => {
-    // Таймаут на випадок, якщо прапорці довго завантажуються
-    const timeout = setTimeout(() => {
-      setFlagsReady(true);
-    }, 3000);
-
-    // Слухаємо подію завантаження прапорців
-    if (posthog?.onFeatureFlags) {
-      posthog.onFeatureFlags(() => {
-        setFlagsReady(true);
-        clearTimeout(timeout);
-      });
-    } else {
-      setFlagsReady(true);
-      clearTimeout(timeout);
-    }
-
-    return () => clearTimeout(timeout);
-  }, []); // Порожній масив — НЕ залежить від showClearButton
-
-  // Додатковий ефект: якщо showClearButton вже відомий через кеш — одразу показуємо
-  useEffect(() => {
-    if (showClearButton !== undefined) {
-      setFlagsReady(true);
-    }
-  }, [showClearButton]);
+  
+  // Проста перевірка без flagsReady
+  const shouldShowButton = showClearButton ?? false;
 
   // Sentry user
   useEffect(() => {
@@ -119,9 +93,6 @@ function App() {
     const errorId = Math.random().toString(36).substring(2, 10);
     throw new Error(`[${timestamp}] Test error from Sentry! ID: ${errorId}`);
   };
-
-  // Кнопка показується тільки коли прапорці завантажились І прапорець true
-  const shouldShowButton = flagsReady && showClearButton === true;
 
   return (
     <div className="App">
