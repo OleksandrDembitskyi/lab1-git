@@ -1,12 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/ph/static/(.*)",
-      "destination": "/api/ph/static/$1"
+      "source": "/ph/static/:path*",
+      "destination": "/api/ph/static/:path*"
     },
     {
-      "source": "/ph/(.*)",
-      "destination": "/api/ph/$1"
+      "source": "/ph/:path*",
+      "destination": "/api/ph/:path*"
     }
   ]
 }
